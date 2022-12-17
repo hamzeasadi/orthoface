@@ -27,12 +27,12 @@ def train(net, train_loader, val_loader, opt, criterion, epochs, minerror, model
     kt = KeepTrack(path=cfg.paths['model'])
     for epoch in range(epochs):
         train_loss = engine.train_step(model=net, data=train_loader, criterion=criterion, optimizer=opt)
-        # val_loss = engine.val_step(model=net, data=val_loader, criterion=criterion)
-        # if val_loss < minerror:
-        #     minerror = val_loss
-        #     kt.save_ckp(model=net, opt=opt, epoch=epoch, minerror=val_loss, fname=modelname)
+        val_loss = engine.val_step(model=net, data=val_loader, criterion=criterion)
+        if val_loss < minerror:
+            minerror = val_loss
+            kt.save_ckp(model=net, opt=opt, epoch=epoch, minerror=val_loss, fname=modelname)
 
-        print(f"train_loss={train_loss} val_loss={1}")
+        print(f"train_loss={train_loss} val_loss={val_loss}")
 
 
 
@@ -45,7 +45,7 @@ def main():
     opt = optim.Adam(params=Net.parameters(), lr=3e-4)
     criteria = OrthoLoss()
     dataset = CelebFace(path=cfg.paths)
-    train_data, val_data, test_data = split_and_create_train_val_test(dataset=dataset, train_percent=0.1, batch_size=32)
+    train_data, val_data, test_data = split_and_create_train_val_test(dataset=dataset, train_percent=0.8, batch_size=32)
     minerror = np.inf
     if args.train:
         train(net=Net, train_loader=train_data, val_loader=val_data, opt=opt, criterion=criteria, epochs=args.epoch, minerror=minerror, modelname=model_name)
